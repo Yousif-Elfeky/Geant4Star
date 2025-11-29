@@ -87,13 +87,13 @@ class StTinyRcTrack {
   void setEmcEnergyRcHit(Float_t val, size_t index) { if (index<3) mEmcEnergyRcHit[index]=val; }
   void setEmcSoftIdHiTowerRc(Short_t val, size_t index) { if (index<3) mEmcSoftIdHiTowerRc[index]=val; }
   // BSMD-Eta (3 towers * 7 strips = 21)
-  void setBsmdeAdcRc(Short_t val, size_t index) { if (index<21) mBsmdeAdcRc[index]=val; }
-  void setBsmdeEnergyRc(Float_t val, size_t index) { if (index<21) mBsmdeEnergyRc[index]=val; }
-  void setBsmdeSoftIdRc(Short_t val, size_t index) { if (index<21) mBsmdeSoftIdRc[index]=val; }
+  void setBsmdeAdcRc(Short_t val, size_t index)    { if (index<9) mBsmdeAdcRc[index]=val; }
+  void setBsmdeEnergyRc(Float_t val, size_t index) { if (index<9) mBsmdeEnergyRc[index]=val; }
+  void setBsmdeSoftIdRc(Short_t val, size_t index) { if (index<9) mBsmdeSoftIdRc[index]=val; }
   // BSMD-Phi (3 towers * 7 strips = 21)
-  void setBsmdpAdcRc(Short_t val, size_t index) { if (index<21) mBsmdpAdcRc[index]=val; }
-  void setBsmdpEnergyRc(Float_t val, size_t index) { if (index<21) mBsmdpEnergyRc[index]=val; }
-  void setBsmdpSoftIdRc(Short_t val, size_t index) { if (index<21) mBsmdpSoftIdRc[index]=val; }
+  void setBsmdpAdcRc(Short_t val, size_t index)    { if (index<9) mBsmdpAdcRc[index]=val; }
+  void setBsmdpEnergyRc(Float_t val, size_t index) { if (index<9) mBsmdpEnergyRc[index]=val; }
+  void setBsmdpSoftIdRc(Short_t val, size_t index) { if (index<9) mBsmdpSoftIdRc[index]=val; }
 
   void setSeedQuality(UShort_t qa) {mSeedQA = qa;}
   float ptPr()const { return mPtPr; }
@@ -154,16 +154,16 @@ class StTinyRcTrack {
   short nPossiblePts() const { return mNPossible; }
 
   short emcTowerAdc(size_t index) const { if (index<3) return mEmcTowerAdc[index]; else return -999;}
-  float emcEnergyRcHit(size_t index) const {if (index<3) return mEmcEnergyRcHit[index]; else return -999;}
+  float emcEnergyRcHit(size_t index) const { if (index<3) return mEmcEnergyRcHit[index]; else return -999;}
   short emcSoftIdHiTowerRc(size_t index) const { if (index<3) return mEmcSoftIdHiTowerRc[index]; else return -999;}
   // BSMD-Eta
-  short bsmdeAdcRc(size_t index) const { if (index<21) return mBsmdeAdcRc[index]; else return -999;}
-  float bsmdeEnergyRc(size_t index) const {if (index<21) return mBsmdeEnergyRc[index]; else return -999;}
-  short bsmdeSoftIdRc(size_t index) const { if (index<21) return mBsmdeSoftIdRc[index]; else return -999;}
+  short bsmdeAdcRc(size_t index) const    { if (index<9) return mBsmdeAdcRc[index]; else return -999;}
+  float bsmdeEnergyRc(size_t index) const { if (index<9) return mBsmdeEnergyRc[index]; else return -999;}
+  short bsmdeSoftIdRc(size_t index) const { if (index<9) return mBsmdeSoftIdRc[index]; else return -999;}
   // BSMD-Phi
-  short bsmdpAdcRc(size_t index) const { if (index<21) return mBsmdpAdcRc[index]; else return -999;}
-  float bsmdpEnergyRc(size_t index) const {if (index<21) return mBsmdpEnergyRc[index]; else return -999;}
-  short bsmdpSoftIdRc(size_t index) const { if (index<21) return mBsmdpSoftIdRc[index]; else return -999;}
+  short bsmdpAdcRc(size_t index) const    { if (index<9) return mBsmdpAdcRc[index]; else return -999;}
+  float bsmdpEnergyRc(size_t index) const { if (index<9) return mBsmdpEnergyRc[index]; else return -999;}
+  short bsmdpSoftIdRc(size_t index) const { if (index<9) return mBsmdpSoftIdRc[index]; else return -999;}
   UShort_t seedQuality() {return mSeedQA;}
   
   virtual void Print(Option_t *option="") const;
@@ -251,13 +251,13 @@ private:
   Float_t      mEmcEnergyRcHit[3];
   Short_t      mEmcSoftIdHiTowerRc[3];
   // BSMD-Eta
-  Short_t      mBsmdeAdcRc[21];
-  Float_t      mBsmdeEnergyRc[21];
-  Short_t      mBsmdeSoftIdRc[21];
+  Short_t      mBsmdeAdcRc[9];
+  Float_t      mBsmdeEnergyRc[9];
+  Short_t      mBsmdeSoftIdRc[9];
   // BSMD-Phi
-  Short_t      mBsmdpAdcRc[21];
-  Float_t      mBsmdpEnergyRc[21];
-  Short_t      mBsmdpSoftIdRc[21];
+  Short_t      mBsmdpAdcRc[9];
+  Float_t      mBsmdpEnergyRc[9];
+  Short_t      mBsmdpSoftIdRc[9];
   ClassDef(StTinyRcTrack,6)
 };
 

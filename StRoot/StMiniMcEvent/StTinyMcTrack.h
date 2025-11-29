@@ -51,12 +51,10 @@ class StTinyMcTrack : public TObject {
   void setEmcEnergyMcHit(Float_t val,size_t index) {if (index<3) mEmcEnergyMcHit[index]=val;}
   void setEmcEnergyMcSum(Float_t val) {mEmcEnergyMcSum=val;}  
   void setEmcSoftIdHiTowerMc(Short_t val,size_t index) {if (index<3) mEmcSoftIdHiTowerMc[index]=val;}
-  // BSMD-Eta (3 towers * 7 strips = 21)
-  void setBsmdeEnergyMc(Float_t val, size_t index) { if (index<21) mBsmdeEnergyMc[index]=val; }
-  void setBsmdeSoftIdMc(Short_t val, size_t index) { if (index<21) mBsmdeSoftIdMc[index]=val; }
-  // BSMD-Phi (3 towers * 7 strips = 21)
-  void setBsmdpEnergyMc(Float_t val, size_t index) { if (index<21) mBsmdpEnergyMc[index]=val; }
-  void setBsmdpSoftIdMc(Short_t val, size_t index) { if (index<21) mBsmdpSoftIdMc[index]=val; }
+  void setBsmdeEnergyMc(Float_t val, size_t index) { if (index<9) mBsmdeEnergyMc[index]=val; }
+  void setBsmdeSoftIdMc(Short_t val, size_t index) { if (index<9) mBsmdeSoftIdMc[index]=val; }
+  void setBsmdpEnergyMc(Float_t val, size_t index) { if (index<9) mBsmdpEnergyMc[index]=val; }
+  void setBsmdpSoftIdMc(Short_t val, size_t index) { if (index<9) mBsmdpSoftIdMc[index]=val; }
 
   float ptMc() const { return mPtMc; }
   float pxMc() const { return mPtMc*cos(mPhiMc); }
@@ -128,11 +126,11 @@ private:
   Float_t    mEmcEnergyMcSum;
   Short_t    mEmcSoftIdHiTowerMc[3];
   // BSMD-Eta
-  Float_t      mBsmdeEnergyMc[21];
-  Short_t      mBsmdeSoftIdMc[21];
+  Float_t      mBsmdeEnergyMc[9];
+  Short_t      mBsmdeSoftIdMc[9];
   // BSMD-Phi
-  Float_t      mBsmdpEnergyMc[21];
-  Short_t      mBsmdpSoftIdMc[21];
+  Float_t      mBsmdpEnergyMc[9];
+  Short_t      mBsmdpSoftIdMc[9];
 
   // assoc stuff
   Short_t    mNAssocGl;		//Number of rc globals   assigned to this mc track
