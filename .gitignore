@@ -17,3 +17,4 @@ CVS/
 *.consign
 *PACKAGE
 .includes*
+run.C
