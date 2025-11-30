@@ -171,7 +171,7 @@ void setupProductionJobs() {
       { "application:engine", "G4" }
     };
 
-    job.recopts="P2025 mysql StiCA EbyET0 ODistoSmear VFMCE TpxClu TpcRS -VFMinuit -hitfilt Tpc23 MiniMcMk,McAna ,useInTracker emcY2 eefs eess epc event nodefault";
+    job.recopts="P2025 mysql StiCA EbyET0 ODistoSmear VFMCE TpxClu TpcRS -VFMinuit -hitfilt Tpc23,McAna ,useInTracker emcY2 eefs eess MiniMcMk epc event nodefault";
 
   };
 
