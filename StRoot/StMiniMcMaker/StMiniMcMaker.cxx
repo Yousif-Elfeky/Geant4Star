@@ -1661,6 +1661,21 @@ void StMiniMcMaker::fillRcTrackInfo(StTinyRcTrack* tinyRcTrack,
       } //3 highest towers loop
       
     }
+    if (Debug()>1) {
+      cout << "rc track, key " << tinyRcTrack->recoKey() << endl;
+      cout << "n Tpc Fit Pts " << tinyRcTrack->fitPts() << endl;
+      cout << "3 bemc hit ene " << tinyRcTrack->emcEnergyRcHit(0)
+	   << ", " << tinyRcTrack->emcEnergyRcHit(1)
+	   << ", " << tinyRcTrack->emcEnergyRcHit(2) << endl;
+      cout << "3 HiTow SoftId Rc " << tinyRcTrack->emcSoftIdHiTowerRc(0)
+	   << ", " << tinyRcTrack->emcSoftIdHiTowerRc(1)
+	   << ", " << tinyRcTrack->emcSoftIdHiTowerRc(2) << endl;
+      float etaTow, phiTow;
+      emcGeom->getEtaPhi(tinyRcTrack->emcSoftIdHiTowerRc(0),etaTow,phiTow);
+      cout << "Hi Tow eta, phi Rc " <<  etaTow << ", " << phiTow << endl;
+      
+    }
+
   }// track has valid projection to EMC.
   StEmcGeom* bsmdeGeom = StEmcGeom::getEmcGeom("bsmde");
   StEmcGeom* bsmdpGeom = StEmcGeom::getEmcGeom("bsmdp");
@@ -1747,20 +1762,6 @@ void StMiniMcMaker::fillRcTrackInfo(StTinyRcTrack* tinyRcTrack,
     }// projOk
   }// bsmdpGeom
 
-    if (Debug()>1) {
-      cout << "rc track, key " << tinyRcTrack->recoKey() << endl;
-      cout << "n Tpc Fit Pts " << tinyRcTrack->fitPts() << endl;
-      cout << "3 bemc hit ene " << tinyRcTrack->emcEnergyRcHit(0)
-	   << ", " << tinyRcTrack->emcEnergyRcHit(1)
-	   << ", " << tinyRcTrack->emcEnergyRcHit(2) << endl;
-      cout << "3 HiTow SoftId Rc " << tinyRcTrack->emcSoftIdHiTowerRc(0)
-	   << ", " << tinyRcTrack->emcSoftIdHiTowerRc(1)
-	   << ", " << tinyRcTrack->emcSoftIdHiTowerRc(2) << endl;
-      float etaTow, phiTow;
-      emcGeom->getEtaPhi(tinyRcTrack->emcSoftIdHiTowerRc(0),etaTow,phiTow);
-      cout << "Hi Tow eta, phi Rc " <<  etaTow << ", " << phiTow << endl;
-      
-    }
   return;
 }
 
