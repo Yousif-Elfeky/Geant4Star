@@ -1595,15 +1595,6 @@ void StMiniMcMaker::fillRcTrackInfo(StTinyRcTrack* tinyRcTrack,
 //       cout << "hx curvature as in EmcProjection: " << helix.curvature() << endl;
 //    }
   }
-  for (size_t i=0; i<21; ++i) {
-      tinyRcTrack->setBsmdeAdcRc(-9, i);
-      tinyRcTrack->setBsmdeEnergyRc(-9, i);
-      tinyRcTrack->setBsmdeSoftIdRc(-9, i);
-      tinyRcTrack->setBsmdpAdcRc(-9, i);
-      tinyRcTrack->setBsmdpEnergyRc(-9, i);
-      tinyRcTrack->setBsmdpSoftIdRc(-9, i);
-  }
-  
   // Project Track onto BEMC radius.
   // Use the mag field obtained from run Info above, it
   // will get multiplied by tesla in StEmcPosition::projTrack.
@@ -1670,6 +1661,92 @@ void StMiniMcMaker::fillRcTrackInfo(StTinyRcTrack* tinyRcTrack,
       } //3 highest towers loop
       
     }
+  }// track has valid projection to EMC.
+  StEmcGeom* bsmdeGeom = StEmcGeom::getEmcGeom("bsmde");
+  StEmcGeom* bsmdpGeom = StEmcGeom::getEmcGeom("bsmdp");
+  if (bsmdeGeom) {
+    StThreeVectorD posE, momE;
+    // Project to BSMD Eta Radius
+    Double_t radiusE = bsmdeGeom->Radius(); 
+    Bool_t projEOk;
+    if (prTrack) projEOk = emcPos.projTrack(&posE, &momE, prTrack, magField*kilogauss/tesla, radiusE);
+    else         projEOk = emcPos.projTrack(&posE, &momE, glTrack, magField*kilogauss/tesla, radiusE);
+    if (projEOk) {
+      Int_t centerId(-1);
+      std::vector<StEmcRawHit*> bsmdeOfTrack;
+      bsmdeGeom->getId(posE.phi(),posE.pseudoRapidity(),centerId);
+      for(int k = -4; k <= 4; ++k) { // take the center strip +/- 4
+        Int_t stripId = centerId + k;
+        if ( stripId == 0 ) continue; // off the end of the barrel
+        if (!bsmdeGeom->checkId(stripId)) {
+          StEmcRawHit* bsmdHit = mBsmdeIndex[stripId];
+          if (bsmdHit!=0) {
+            bsmdeOfTrack.push_back(bsmdHit);
+          } // check valid StEmcRawHit pointer
+        }// check valid id
+      }
+      if (bsmdeOfTrack.size()>0) {
+        sort(bsmdeOfTrack.begin(),bsmdeOfTrack.end(),StEmcRawHitCompEne);
+        // Store the ADC, Energy of the highest strips
+        int maxStrips=9;
+        if (bsmdeOfTrack.size()<maxStrips) maxStrips=bsmdeOfTrack.size();
+        for(int iStrip=0; iStrip<maxStrips; ++iStrip) {
+          tinyRcTrack->setBsmdeEnergyRc(bsmdeOfTrack[iStrip]->energy(),iStrip);
+          tinyRcTrack->setBsmdeAdcRc(bsmdeOfTrack[iStrip]->adc(),iStrip);
+          tinyRcTrack->setBsmdeSoftIdRc(bsmdeOfTrack[iStrip]->softId(3),iStrip); // 3 is bsmde
+        } //highest strips loop
+      } else {
+        for(int iStrip=0; iStrip<9; ++iStrip) {
+          tinyRcTrack->setBsmdeEnergyRc(-9,iStrip);
+          tinyRcTrack->setBsmdeAdcRc(-9,iStrip); 
+          tinyRcTrack->setBsmdeSoftIdRc(-9,iStrip);
+        }
+      }
+    }// projOk
+  }// bsmdeGeom
+  if (bsmdpGeom) {
+    StThreeVectorD posE, momE;
+    // Project to BSMD Phi Radius
+    Double_t radiusE = bsmdpGeom->Radius(); 
+    Bool_t projEOk;
+    if (prTrack) projEOk = emcPos.projTrack(&posE, &momE, prTrack, magField*kilogauss/tesla, radiusE);
+    else         projEOk = emcPos.projTrack(&posE, &momE, glTrack, magField*kilogauss/tesla, radiusE);
+    if (projEOk) {
+      Int_t centerId(-1);
+      std::vector<StEmcRawHit*> bsmdpOfTrack;
+      bsmdpGeom->getId(posE.phi(),posE.pseudoRapidity(),centerId);
+      for(int k = -4; k <= 4; ++k) {
+        Int_t stripId = centerId + k;
+        if ( stripId == 0 ) continue; // off the end of the barrel
+        if (!bsmdpGeom->checkId(stripId)) {
+          StEmcRawHit* bsmdHit = mBsmdpIndex[stripId];
+          if (bsmdHit!=0) {
+            bsmdpOfTrack.push_back(bsmdHit);
+          } // check valid StEmcRawHit pointer
+        }// check valid id
+      }
+      if (bsmdpOfTrack.size()>0) {
+        // Obtained all strips (9 at most).
+        // Sort them by energy, using helper function defined atop this file
+        sort(bsmdpOfTrack.begin(),bsmdpOfTrack.end(),StEmcRawHitCompEne);
+        // Store the ADC, Energy of the highest strip
+        int maxStrips=9;
+        if (bsmdpOfTrack.size()<maxStrips) maxStrips=bsmdpOfTrack.size();
+        for(int iStrip=0; iStrip<maxStrips; ++iStrip) {
+          tinyRcTrack->setBsmdpEnergyRc(bsmdpOfTrack[iStrip]->energy(),iStrip);
+          tinyRcTrack->setBsmdpAdcRc(bsmdpOfTrack[iStrip]->adc(),iStrip);
+          tinyRcTrack->setBsmdpSoftIdRc(bsmdpOfTrack[iStrip]->softId(4),iStrip); // 4 is bsmdp
+        } //highest strips loop
+      } else {
+        for(int iStrip=0; iStrip<9; ++iStrip) {
+          tinyRcTrack->setBsmdpEnergyRc(-9,iStrip);
+          tinyRcTrack->setBsmdpAdcRc(-9,iStrip); 
+          tinyRcTrack->setBsmdpSoftIdRc(-9,iStrip);
+        }
+      }
+    }// projOk
+  }// bsmdpGeom
+
     if (Debug()>1) {
       cout << "rc track, key " << tinyRcTrack->recoKey() << endl;
       cout << "n Tpc Fit Pts " << tinyRcTrack->fitPts() << endl;
@@ -1684,75 +1761,6 @@ void StMiniMcMaker::fillRcTrackInfo(StTinyRcTrack* tinyRcTrack,
       cout << "Hi Tow eta, phi Rc " <<  etaTow << ", " << phiTow << endl;
       
     }
-    int maxTowers = 3; //for now
-    if (maxTowers > 0) {
-      StEmcGeom* bsmdeGeom = StEmcGeom::getEmcGeom("bsmde");
-      StEmcGeom* bsmdpGeom = StEmcGeom::getEmcGeom("bsmdp");
-
-      if (bsmdeGeom && bsmdpGeom) {
-        // Loop over the 3 (or fewer) highest BEMC towers
-      for (size_t iTow=0; iTow<maxTowers; ++iTow) {
-      if (!towersOfTrack[iTow]) {
-          LOG_WARN << "StMiniMcMaker: Track has NULL tower pointer at index " << iTow << ". Skipping." << endm;
-          continue;
-      }
-      int currentTowerSoftId = towersOfTrack[iTow]->softId(1);
-      
-      // Get the geometric center of this tower
-      float towerEta, towerPhi;
-      emcGeom->getEtaPhi(currentTowerSoftId, towerEta, towerPhi);
-
-      // Get Central BSMDE strip and neighbors
-      int centralBsmdeId = -1;
-      bsmdeGeom->getId(towerPhi, towerEta, centralBsmdeId);
-
-      if (centralBsmdeId > 0) {
-          for (int jStrip = -3; jStrip <= 3; ++jStrip) { // -3 to +3 = 7 strips
-              int currentStripId = centralBsmdeId + jStrip;
-              int globalIndex = iTow * 7 + (jStrip + 3); // (jStrip+3) maps -3..3 to 0..6
-
-              if (currentStripId <= 0 || currentStripId >= 18001) continue;
-              if (globalIndex >= 21) continue;
-
-              StEmcRawHit* bsmdeHit = mBsmdeIndex[currentStripId];
-              if (bsmdeHit) {
-                tinyRcTrack->setBsmdeAdcRc(bsmdeHit->adc(), globalIndex);
-                tinyRcTrack->setBsmdeEnergyRc(bsmdeHit->energy(), globalIndex);
-              } else {
-                tinyRcTrack->setBsmdeAdcRc(-9, globalIndex);
-                tinyRcTrack->setBsmdeEnergyRc(-9, globalIndex);
-              }
-            tinyRcTrack->setBsmdeSoftIdRc(currentStripId, globalIndex);
-          }
-      } // end if centralBsmdeId valid
-
-      // Get Central BSMDP strip and neighbors
-      int centralBsmdpId = -1;
-      bsmdpGeom->getId(towerPhi, towerEta, centralBsmdpId);
-
-      if (centralBsmdpId > 0) {
-          for (int jStrip = -3; jStrip <= 3; ++jStrip) { // -3 to +3 = 7 strips
-              int currentStripId = centralBsmdpId + jStrip;
-              int globalIndex = iTow * 7 + (jStrip + 3);
-
-              if (currentStripId <= 0 || currentStripId >= 18001) continue;
-              if (globalIndex >= 21) continue;
-
-              StEmcRawHit* bsmdpHit = mBsmdpIndex[currentStripId];
-              if (bsmdpHit) {
-                tinyRcTrack->setBsmdpAdcRc(bsmdpHit->adc(), globalIndex);
-                tinyRcTrack->setBsmdpEnergyRc(bsmdpHit->energy(), globalIndex);
-              } else {
-                tinyRcTrack->setBsmdpAdcRc(-9, globalIndex);
-                tinyRcTrack->setBsmdpEnergyRc(-9, globalIndex);
-              }
-              tinyRcTrack->setBsmdpSoftIdRc(currentStripId, globalIndex);
-            }
-          } // end if centralBsmdpId valid
-        } // end loop over 3 towers
-      } // if bsmdeGeom && bsmdpGeom
-    } // if maxTowers > 0
-  }// track has valid projection to EMC.
   return;
 }
 
@@ -1824,29 +1832,7 @@ void  StMiniMcMaker::fillMcTrackInfo(StTinyMcTrack* tinyMcTrack,
     if (bemcHits.size()>0) {
       // Since we need to find BSMD hits by SoftID (calculated from Tower geometry),
       // we map the track's BSMD hits for fast O(1) lookup.
-      std::map<int, StMcCalorimeterHit*> smdeMap;
-      std::map<int, StMcCalorimeterHit*> smdpMap;
-      
-      StEmcGeom* bsmdeGeom = StEmcGeom::getEmcGeom("bsmde");
-      StEmcGeom* bsmdpGeom = StEmcGeom::getEmcGeom("bsmdp");
-      // Fill SMDE Map
-      if (bsmdeGeom) {
-        StPtrVecMcCalorimeterHit smdeHits = mcTrack->bsmdeHits();
-        for (auto hit : smdeHits) {
-          int id = -1;
-          bsmdeGeom->getId(hit->module(), hit->eta(), hit->sub(), id);
-          if (id > 0) smdeMap[id] = hit;
-        }
-      }
-      // Fill SMDP Map
-      if (bsmdpGeom) {
-        StPtrVecMcCalorimeterHit smdpHits = mcTrack->bsmdpHits();
-        for (auto hit : smdpHits) {
-          int id = -1;
-          bsmdpGeom->getId(hit->module(), hit->eta(), hit->sub(), id);
-          if (id > 0) smdpMap[id] = hit;
-        }
-      }
+
       std::vector<StMcCalorimeterHit*> bemcHitsSorted(bemcHits.size());
       int  hiEnergyHitSoftId(-999);
       double sumEnergy(0);
@@ -1876,46 +1862,6 @@ void  StMiniMcMaker::fillMcTrackInfo(StTinyMcTrack* tinyMcTrack,
 		       bemcHitsSorted[iCalHit]->eta(),
 		       bemcHitsSorted[iCalHit]->sub(),hiEnergyHitSoftId);
 	tinyMcTrack->setEmcSoftIdHiTowerMc(static_cast<Short_t>(hiEnergyHitSoftId),iCalHit);
-        // 2. Fill BSMDE/P based on this Tower
-        // Get Tower Center geometry
-        float towEtaVal, towPhiVal;
-        emcGeom->getEtaPhi(hiEnergyHitSoftId, towEtaVal, towPhiVal);
-        // BSMDE
-        if (bsmdeGeom) {
-          int centralId = -1;
-          bsmdeGeom->getId(towPhiVal, towEtaVal, centralId);
-          if (centralId > 0) {
-            for (int k = -3; k <= 3; ++k) {
-              int stripId = centralId + k;
-              int idx = iCalHit * 7 + (k + 3);
-              if (stripId > 0 && stripId < 18001 && idx < 21) {
-                tinyMcTrack->setBsmdeSoftIdMc(stripId, idx);
-                // Check if track has a hit on this strip
-                if (smdeMap.count(stripId)) {
-                  tinyMcTrack->setBsmdeEnergyMc(smdeMap[stripId]->dE(), idx);
-                }
-              }
-            }
-          }
-        }
-        // BSMDP
-        if (bsmdpGeom) {
-          int centralId = -1;
-          bsmdpGeom->getId(towPhiVal, towEtaVal, centralId);
-          if (centralId > 0) {
-            for (int k = -3; k <= 3; ++k) {
-              int stripId = centralId + k;
-              int idx = iCalHit * 7 + (k + 3);
-              if (stripId > 0 && stripId < 18001 && idx < 21) {
-                tinyMcTrack->setBsmdpSoftIdMc(stripId, idx);
-                // Check if track has a hit on this strip
-                if (smdpMap.count(stripId)) {
-                  tinyMcTrack->setBsmdpEnergyMc(smdpMap[stripId]->dE(), idx);
-                }
-              }
-            }
-          }
-        }
       }
       // Fill the rest of the hits, from maxHits up to 3, with zeros
       for (size_t iCalHit2=maxHits; iCalHit2<3; ++iCalHit2) {
@@ -1956,6 +1902,62 @@ void  StMiniMcMaker::fillMcTrackInfo(StTinyMcTrack* tinyMcTrack,
       } // debug
 
     } // if the track has bemc hits
+  StEmcGeom* bsmdeGeom = StEmcGeom::getEmcGeom("bsmde");
+  StPtrVecMcCalorimeterHit smdeHits = mcTrack->bsmdeHits();
+  
+  if (smdeHits.size() > 0 && bsmdeGeom) {
+    // Sort hits by deposted Energy (dE)
+    vector<StMcCalorimeterHit*> sortedHits(smdeHits.begin(), smdeHits.end());
+    sort(sortedHits.begin(), sortedHits.end(), StMcCalorimeterHitCompdE);
+
+    // We take the top 9 hits
+    int maxStrips = (sortedHits.size() < 9) ? sortedHits.size() : 9;
+
+    for (int i = 0; i < maxStrips; ++i) {
+      StMcCalorimeterHit* hit = sortedHits[i];
+      
+      Int_t id(-1);
+      bsmdeGeom->getId(hit->module(), hit->eta(), hit->sub(), id);
+      float eta(0);
+      bsmdeGeom->getEta(hit->module(), hit->eta(), eta);
+      
+      tinyMcTrack->setBsmdeSoftIdMc(id, i);
+      tinyMcTrack->setBsmdeEnergyMc(hit->dE()*scaleFactor(eta,2), i);
+    }
+    for (int i = maxStrips; i < 9; ++i) {
+      tinyMcTrack->setBsmdeSoftIdMc(-9, i);
+      tinyMcTrack->setBsmdeEnergyMc(-9, i);
+    }
+  }
+
+  // 5. Fill BSMDP Information (Top 9 Strips)
+  StEmcGeom* bsmdpGeom = StEmcGeom::getEmcGeom("bsmdp");
+  StPtrVecMcCalorimeterHit smdpHits = mcTrack->bsmdpHits();
+  
+  if (smdpHits.size() > 0 && bsmdpGeom) {
+    vector<StMcCalorimeterHit*> sortedHits(smdpHits.begin(), smdpHits.end());
+    sort(sortedHits.begin(), sortedHits.end(), StMcCalorimeterHitCompdE);
+
+    // We take the top 9 hits
+    int maxStrips = (sortedHits.size() < 9) ? sortedHits.size() : 9;
+
+    for (int i = 0; i < maxStrips; ++i) {
+      StMcCalorimeterHit* hit = sortedHits[i];
+      
+      Int_t id(-1);
+      bsmdpGeom->getId(hit->module(), hit->eta(), hit->sub(), id);
+      float eta(0);
+      bsmdpGeom->getEta(hit->module(), hit->eta(), eta);
+ 
+      tinyMcTrack->setBsmdpSoftIdMc(id, i);
+      tinyMcTrack->setBsmdpEnergyMc(hit->dE()*scaleFactor(eta,3), i);
+    }
+    for (int i = maxStrips; i < 9; ++i) {
+      tinyMcTrack->setBsmdpSoftIdMc(-9, i);
+      tinyMcTrack->setBsmdpEnergyMc(-9, i);
+    }
+
+  }
     //  if(stopR<999) cout << ">>stop r=" << stopR << endl;
   }// if (mcTrack)
   return;
